@@ -1,13 +1,11 @@
 import express from "express";
 import {authenticate} from "../middleware/authMiddleware.js";
-import {deleteReview, postReview, updateReview} from "../controllers/reviewController.js";
+import {deleteReview, updateReview} from "../controllers/reviewController.js";
 
 const router = express.Router();
 
-router.post("/books/:id/reviews", authenticate, postReview);
+router.put("/:id", authenticate, updateReview);
 
-router.put("/reviews/:id", authenticate, updateReview);
-
-router.delete("/reviews/:id", authenticate, deleteReview);
+router.delete("/:id", authenticate, deleteReview);
 
 export default router;

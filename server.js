@@ -17,8 +17,8 @@ app.use(bodyParser.json());
 app.use(express.json());
 
 app.use('/api/auth', authRoutes);
-app.use('/api/book', bookRoutes);
-app.use('/api/review', reviewRoutes);
+app.use('/api/books', bookRoutes);
+app.use('/api/reviews', reviewRoutes);
 
 
 app.listen(process.env.PORT, () => {

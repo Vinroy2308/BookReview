@@ -1,16 +1,26 @@
 import jwt from 'jsonwebtoken';
 import bcrypt from 'bcryptjs';
 import {User} from "../models/user.js";
+import {addUser, getUser} from "../models/mongodb.js";
 
 // Register function to register new users to access the application features
 const register = async (req, res) => {
     const {username, email, password} = req.body;
 
+    const userExists = await getUser(email);
+    if (userExists) {
+        return res.status(400).json({message: "User already exists"});
+    }
     const hashedPassword = await bcrypt.hash(password, 12);
     const user = new User({username, email, password: hashedPassword});
-    await user.save();
 
-    res.status(201).json({message:`${user.username} is successfully registered in the database`});
+    try {
+        await addUser(user);
+        res.status(201).json({message:`${user.username} is successfully registered in the database`});
+    } catch (e) {
+        res.status(400).json({message: "Error occurred while saving the user ", e});
+    }
+
 }
 
 
@@ -20,9 +30,9 @@ const login = async (req, res) => {
 
 
     // Check if the user exists in the database
-    const user = await User.findOne({email});
+    const user = await getUser(email);
     if(!user){
-        res.status(401).json({message:"User not found"});
+        return res.status(401).json({message:"User not found"});
     }
 
     // Used to check if the password from the request is the same as the hashed password in the database
