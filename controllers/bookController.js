@@ -17,14 +17,19 @@ const postNewBook = async (req, res) => {
 
 // Get function which allows the users to view all the books in the database
 const getAllBooks = async (req, res) => {
-    const books = await Book.find();
-    res.json(books);
+    const {page = 1, limit = 10} = req.query;
+    const books = await Book.find().skip((page - 1) * limit).limit(limit);
+    res.json({
+        books,
+        pageNumber: page,
+    });
 }
 
 // Get function to display all the details of the books along with the reviews posted by the user
 // Also shows the average rating for the book
 const getBookDetails = async (req, res) => {
     const id = req.params.id;
+    const {page = 1, limit = 10} = req.query;
     const book = await Book.findById(id);
     if (!book) {
         res.status(404).json({message: "Book not found"});
@@ -35,10 +40,13 @@ const getBookDetails = async (req, res) => {
     // Calculating the average rating of the book retrieved from the reviews collection
     const averageRating = reviews.length ? reviews.reduce((sum, review) => sum + review.rating, 0) / reviews.length : 0;
 
+    const reviewsPaginated = await Review.find({bookId: id}).skip((page - 1) * limit).limit(limit);
+
     res.json({
         book,
         rating: averageRating.toFixed(1),
-        reviews
+        reviews: reviewsPaginated,
+        pageNumber: page,
     });
 }
 
