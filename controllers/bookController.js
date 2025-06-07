@@ -9,7 +9,7 @@ const postNewBook = async (req, res) => {
 
     try {
         await book.save();
-        res.status(201).json({message: `${book} added successfully`})
+        res.status(201).json({message: `${book} added successfully by user ${req.user.id}`})
     }catch(err) {
         res.status(401).json({message: "Not able to add a book", error: err});
     }
