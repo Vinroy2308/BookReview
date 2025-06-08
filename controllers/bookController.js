@@ -19,23 +19,28 @@ const postNewBook = async (req, res) => {
         await addBook(book);
         return res.status(201).json({message: `${book} added successfully by user ${req.user.id}`})
     }catch(err) {
-        return res.status(401).json({message: "Not able to add a book", error: err});
+        return res.status(500).json({message: "Not able to add a book", error: err});
     }
 }
 
 // Get function which allows the users to view all the books in the database
 const getAllBooks = async (req, res) => {
-    const {page, limit, genre, author} = req.query;
+    try {
+        const {page, limit, genre, author} = req.query;
 
-    //bookFilter is used to filter the books by genre and author. For Author RegExp is used for partial and case-insensitive words
-    const bookFilter = {};
-    if (genre) bookFilter["genre"] = genre;
-    if (author) bookFilter["author"] = new RegExp(author, "i");
-    const books = await findAllBooks(bookFilter, page, limit);
-    return res.json({
-        books,
-        pageNumber: page,
-    });
+        //bookFilter is used to filter the books by genre and author. For Author RegExp is used for partial and case-insensitive words
+        const bookFilter = {};
+        if (genre) bookFilter["genre"] = genre;
+        if (author) bookFilter["author"] = new RegExp(author, "i");
+        const books = await findAllBooks(bookFilter, page, limit);
+        return res.json({
+            books,
+            pageNumber: page,
+        });
+    } catch (e) {
+        return res.status(500).json({message: "Faced an issue when getting all books from the database", e});
+    }
+
 }
 
 // Get function to display all the details of the books along with the reviews posted by the user
@@ -67,37 +72,46 @@ const getBookDetails = async (req, res) => {
 }
 
 const postReview = async (req, res) => {
-    const bookId = req.params.id;
-    const userId = req.user.id;
+    try {
+        const bookId = req.params.id;
+        const userId = req.user.id;
 
-    const checkReviewAvailable = await findReviewByUserAndBook(bookId, userId);
-    console.log(checkReviewAvailable);
-    if (checkReviewAvailable.length > 0) {
-        return res.status(400).json({message: "You have already reviewed this book. This action cannot be performed more than once."});
+        const checkReviewAvailable = await findReviewByUserAndBook(bookId, userId);
+        if (checkReviewAvailable.length > 0) {
+            return res.status(400).json({message: "You have already reviewed this book. This action cannot be performed more than once."});
+        }
+        const bookReview = req.body;
+
+        const newReview = new Review({
+            bookId: bookId,
+            userId: userId,
+            rating: bookReview.rating,
+            review: bookReview.review
+        });
+
+        await addReview(newReview);
+        return res.status(201).json({message: "Your review has been added successfully."});
+    } catch (e) {
+        return res.status(500).json({message: "Faced an issue while saving the review", e});
     }
-    const bookReview = req.body;
 
-    const newReview = new Review({
-        bookId: bookId,
-        userId: userId,
-        rating: bookReview.rating,
-        review: bookReview.review
-    });
-
-    await addReview(newReview);
-    return res.status(201).json({message: "Your review has been added successfully."});
 
 }
 
 const searchBook = async (req, res) => {
-    const {query} = req.query;
-    if (!query) {
-        return res.status(400).json({message: "Search query is required"});
+    try {
+        const {query} = req.query;
+        if (!query) {
+            return res.status(400).json({message: "Search query is required"});
+        }
+
+        const books = await findBookByQuery(query);
+
+        return res.json({books});
+    } catch (e) {
+        return res.status(500).json({message: "Search query failed", e});
     }
 
-    const books = await findBookByQuery(query);
-
-    return res.json({books});
 }
 
 export {

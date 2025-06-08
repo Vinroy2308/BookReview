@@ -1,7 +1,10 @@
 import {User} from "./user.js";
 import {Book} from "./book.js";
 import {Review} from "./review.js";
+// Centralized mongodb file for keeping all the mongodb function in one place
 
+
+// Add user to the database
 const addUser = async (user) => {
     try {
         return await user.save();
@@ -11,6 +14,7 @@ const addUser = async (user) => {
     }
 }
 
+// Function to get user from the database. Used when logging in.
 const getUser = async (email) => {
     try {
         return await User.findOne({email: email});
@@ -20,6 +24,7 @@ const getUser = async (email) => {
     }
 }
 
+// Function to save a book to the database.
 const addBook = async (book) => {
     try {
         return await book.save();
@@ -29,6 +34,8 @@ const addBook = async (book) => {
     }
 }
 
+
+// Function to get all books from the database. Filter is used to filter based on author and genre. Includes pagination
 const findAllBooks = async (filter, page = 1, limit = 10) => {
     try {
         return await Book.find(filter).skip((page - 1) * limit).limit(limit);
@@ -38,6 +45,7 @@ const findAllBooks = async (filter, page = 1, limit = 10) => {
     }
 }
 
+// Function to find book based on the provided id
 const findBookById = async (id) => {
     try {
         return await Book.findById(id);
@@ -47,6 +55,7 @@ const findBookById = async (id) => {
     }
 }
 
+// Function to calculate the average rating of a book based on the reviews provided by users
 const calculateAverageRating = async (bookId) => {
     try {
         const reviews = await Review.find({bookId});
@@ -57,6 +66,7 @@ const calculateAverageRating = async (bookId) => {
     }
 }
 
+//  Function to get all reviews of a book based on its id. Included pagination.
 const getAllReviews = async (bookId, page = 1, limit = 10) => {
     try {
         return await Review.find({bookId}).skip((page - 1) * limit).limit(limit);
@@ -66,6 +76,7 @@ const getAllReviews = async (bookId, page = 1, limit = 10) => {
     }
 }
 
+// Function to find a review based on the bookId and userId. Used to check if a review already exists from a user for the book.
 const findReviewByUserAndBook = async (bookId, userId) => {
     try {
         return await Review.find({bookId: bookId, userId: userId});
@@ -75,6 +86,7 @@ const findReviewByUserAndBook = async (bookId, userId) => {
     }
 }
 
+// Function to save a Review to the database.
 const addReview = async (review) => {
     try {
         return await review.save();
@@ -84,6 +96,9 @@ const addReview = async (review) => {
     }
 }
 
+// Function to search for book based on the query provided.
+// It can be either title or author of the book where partial or case-insensitive values are provided
+// It checks whether either of the condition matches
 const findBookByQuery = async (query) => {
     try {
         return await Book.find({
@@ -98,6 +113,9 @@ const findBookByQuery = async (query) => {
     }
 }
 
+// Function to find a review based on the review id and user id.
+// Used to check if the review belongs to the user.
+// This is used in update and delete review so only the review user can do these operations.
 const findUserReview = async (id, userId) => {
     try {
         return await Review.findOne({id, userId});
@@ -107,6 +125,8 @@ const findUserReview = async (id, userId) => {
     }
 }
 
+// Function to update the review of the user.
+// updatedReview is the review to be updated and is queried using the review id.
 const updateUserReview = async (id, updatedReview) => {
     try {
         return await Review.findByIdAndUpdate({_id: id}, {review: updatedReview});
@@ -116,6 +136,7 @@ const updateUserReview = async (id, updatedReview) => {
     }
 }
 
+// Function to delete the review of the user based on the review id provided.
 const deleteUserReview = async (id) => {
     try {
         return await Review.findByIdAndDelete({_id: id});
