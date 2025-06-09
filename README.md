@@ -237,7 +237,7 @@ In the Headers section, add ``Authorization`` and the value as
 
 ``localhost:4500/api/books/search?query=scott`` Filters by Author
 
-``localhost:4500/api/books/search?title=orbi`` Filters by Title
+``localhost:4500/api/books/search?query=orbi`` Filters by Title
 
 ## ER Diagram for Book Review API
 ![Book Review API ER Diagram](image/BookReviewERDiagram.png)
