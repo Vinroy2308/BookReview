@@ -104,7 +104,6 @@ const searchBook = async (req, res) => {
         if (!query) {
             return res.status(400).json({message: "Search query is required"});
         }
-
         const books = await findBookByQuery(query);
 
         return res.json({books});
